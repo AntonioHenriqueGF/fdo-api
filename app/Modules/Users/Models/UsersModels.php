@@ -23,10 +23,8 @@ class UsersModels extends Model
         'use_remember_token',
     ]; // Specify the hidden attributes
 
-    public function verifyUserCredentials(string $email, string $password)
+    public function findByEmail(string $email): ?self
     {
-        // Implement your logic to verify user credentials here
-        // For example, you can use Laravel's built-in authentication features
-        return $this->where('use_email', $email)->where('use_password', $password)->get()->toArray();
+        return $this->where('use_email', $email)->first();
     }
 }

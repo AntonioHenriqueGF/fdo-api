@@ -2,21 +2,32 @@
 
 namespace App\Modules\Users\UseCases;
 
+use App\Modules\Users\Exceptions\AuthenticationException;
 use App\Modules\Users\Models\UsersModels;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class LoginUseCase
 {
-    public function __construct(
-        private UsersModels $usersModel
-    ) {
-        // You can inject any dependencies here if needed
-    }
-
-    public function execute(array $credentials)
+    public function execute(array $credentials, mixed $session = null): mixed
     {
-        dd($this->usersModel->verifyUserCredentials($credentials['email'], $credentials['password']));
-        // Implement your login logic here, such as validating user credentials and generating a token
-        return 'Login successful!';
+        $credentials = [
+            'use_email' => $credentials['email'],
+            'password' => $credentials['password'],
+        ];
+
+
+        if (!Auth::attempt($credentials)) {
+            throw new AuthenticationException();
+        }
+
+        $user = Auth::user();
+
+        if ($session) {
+            $session->regenerate();
+            $session->put('user_id', $user->id);
+        }
+
+        return $user;
     }
 }

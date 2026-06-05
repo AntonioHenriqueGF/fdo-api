@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use Notifiable;
+    use HasApiTokens;
 
     protected $table = 'users';
 
@@ -29,17 +29,11 @@ class User extends Authenticatable
         'use_remember_token',
     ];
 
-    /**
-     * Campo usado para senha pelo sistema de autenticação
-     */
     public function getAuthPassword()
     {
         return $this->use_password;
     }
 
-    /**
-     * Campo usado para "remember me"
-     */
     public function getRememberTokenName()
     {
         return 'use_remember_token';
