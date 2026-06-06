@@ -3,13 +3,12 @@
 namespace App\Modules\Users\UseCases;
 
 use App\Modules\Users\Exceptions\AuthenticationException;
-use App\Modules\Users\Models\UsersModels;
+use Illuminate\Contracts\Session\Session;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 
 class LoginUseCase
 {
-    public function execute(array $credentials, mixed $session = null): mixed
+    public function execute(array $credentials, Session $session): mixed
     {
         $credentials = [
             'use_email' => $credentials['email'],
