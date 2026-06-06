@@ -2,12 +2,13 @@
 
 use App\Modules\Imports\Http\Controllers\ImportsController;
 use App\Modules\Users\Http\Controllers\LoginController;
+use App\Modules\Users\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Route::group(['middleware' => ['web']], function () { });
-
 Route::post('/login', [LoginController::class, 'login']);
+
+Route::post('/signup', [UserController::class, 'create']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/import', [ImportsController::class, 'import']);
