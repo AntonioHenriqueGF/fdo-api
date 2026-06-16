@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Auth;
 
 class MeUseCase
 {
+    /**
+     * @return \Illuminate\Contracts\Auth\Authenticatable|null $user
+     */
     public function execute(): mixed
     {
         $user = Auth::user();

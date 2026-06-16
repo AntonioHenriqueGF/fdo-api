@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Modules\Transactions\UseCases;
+
+use App\Modules\Transactions\Models\DailyBalancesModel;
+use App\Modules\Users\UseCases\MeUseCase;
+
+class MonthlyBalancesUseCase
+{
+    public function __construct(
+        private DailyBalancesModel $dailyBalancesModel,
+        private MeUseCase $meUseCase
+    ) {}
+    public function execute(): array
+    {
+        // Implement logic to calculate and return the user's monthly balances
+        $userId = $this->meUseCase->execute()->use_id;
+        return $this->dailyBalancesModel->listBalanceByMonth($userId);
+    }
+}

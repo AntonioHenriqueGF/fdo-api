@@ -15,7 +15,6 @@ class LoginUseCase
             'password' => $credentials['password'],
         ];
 
-
         if (!Auth::attempt($credentials)) {
             throw new AuthenticationException();
         }

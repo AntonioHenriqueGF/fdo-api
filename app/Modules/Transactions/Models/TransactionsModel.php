@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Imports\Models;
+namespace App\Modules\Transactions\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -35,5 +35,37 @@ class TransactionsModel extends Model
                 'tra_description' => $transaction['description'],
             ]);
         }
+    }
+
+    /**
+     * Retrieves the total balance of the daily transactions for a given user.
+     * @param int $userId
+     * @return array
+     */
+    public function getDailyTransactions($userId)
+    {
+        return DB::table('transactions')
+            ->select('tra_date', DB::raw('SUM(tra_amount) as total_amount'))
+            ->where('tra_user_id', $userId)
+            ->groupBy('tra_date')
+            ->orderBy('tra_date', 'asc')
+            ->get()
+            ->toArray();
+    }
+
+    /**
+     * Retrieves the total balance of the monthly transactions for a given user.
+     * @param int $userId
+     * @return array
+     */
+    public function getMonthlyTransactions($userId)
+    {
+        return DB::table('transactions')
+            ->select(DB::raw('DATE_FORMAT(tra_date, "%Y-%m") as month'), DB::raw('SUM(tra_amount) as total_amount'))
+            ->where('tra_user_id', $userId)
+            ->groupBy(DB::raw('DATE_FORMAT(tra_date, "%Y-%m")'))
+            ->orderBy(DB::raw('DATE_FORMAT(tra_date, "%Y-%m")'), 'asc')
+            ->get()
+            ->toArray();
     }
 }

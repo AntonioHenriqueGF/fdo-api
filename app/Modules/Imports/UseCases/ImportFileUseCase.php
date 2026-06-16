@@ -2,9 +2,9 @@
 
 namespace App\Modules\Imports\UseCases;
 
-use App\Modules\Imports\Models\DailyBalancesModel;
 use App\Modules\Imports\Models\ImportsModel;
-use App\Modules\Imports\Models\TransactionsModel;
+use App\Modules\Transactions\Models\DailyBalancesModel;
+use App\Modules\Transactions\Models\TransactionsModel;
 
 class ImportFileUseCase
 {

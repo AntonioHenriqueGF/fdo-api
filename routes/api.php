@@ -1,10 +1,10 @@
 <?php
 
 use App\Modules\Imports\Http\Controllers\ImportsController;
+use App\Modules\Transactions\Http\Controllers\BalanceController;
+use App\Modules\Transactions\Http\Controllers\TransactionsController;
 use App\Modules\Users\Http\Controllers\LoginController;
 use App\Modules\Users\Http\Controllers\UserController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [LoginController::class, 'login']);
@@ -12,19 +12,20 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::post('/signup', [UserController::class, 'create']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/import', [ImportsController::class, 'import']);
 
     Route::get('/me', [LoginController::class, 'me']);
 
     Route::post('/logout', [LoginController::class, 'logout']);
-});
 
-Route::get('/test-auth', function (Request $request) {
+    Route::post('/import', [ImportsController::class, 'import']);
 
-    return response()->json([
-        'authenticated' => Auth::check(),
-        'session_id' => $request->session()->getId(),
-        'session' => session()->all(),
-        'cookies' => $request->cookies->all(),
-    ]);
+    Route::group(['prefix' => 'balance'], function () {
+        Route::get('/daily', [BalanceController::class, 'getDailyBalance']);
+        Route::get('/monthly', [BalanceController::class, 'getMonthlyBalance']);
+    });
+
+    Route::group(['prefix' => 'transactions'], function () {
+        Route::get('/daily', [TransactionsController::class, 'getDailyTransactions']);
+        Route::get('/monthly', [TransactionsController::class, 'getMonthlyTransactions']);
+    });
 });
