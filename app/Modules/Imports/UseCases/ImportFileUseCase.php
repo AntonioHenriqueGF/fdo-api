@@ -5,6 +5,7 @@ namespace App\Modules\Imports\UseCases;
 use App\Modules\Imports\Models\ImportsModel;
 use App\Modules\Transactions\Models\DailyBalancesModel;
 use App\Modules\Transactions\Models\TransactionsModel;
+use Illuminate\Support\Facades\Auth;
 
 class ImportFileUseCase
 {
@@ -26,7 +27,8 @@ class ImportFileUseCase
      */
     public function execute($data)
     {
-        $userId = '1'; // Replace with actual user ID from authentication context
+        $user = Auth::user();
+        $userId = $user->id;
 
         $binHex = hex2bin($data['fileHash']);
         if ($binHex === false) {
