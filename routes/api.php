@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Categories\Http\Controllers\CategoriesController;
 use App\Modules\Imports\Http\Controllers\ImportsController;
 use App\Modules\Transactions\Http\Controllers\BalanceController;
 use App\Modules\Transactions\Http\Controllers\TransactionsController;
@@ -28,4 +29,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/daily', [TransactionsController::class, 'getDailyTransactions']);
         Route::get('/monthly', [TransactionsController::class, 'getMonthlyTransactions']);
     });
+
+    Route::resource('categories', CategoriesController::class);
 });
