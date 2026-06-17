@@ -12,7 +12,7 @@ class DeleteCategoriesUseCases
     ) {
         //
     }
-    public function execute(int $id): CategoriesModel
+    public function execute(int $id): array
     {
         $user = Auth::user();
         $category = $this->categoriesModel->where('cat_user_id', $user->use_id)->find($id);
@@ -23,6 +23,6 @@ class DeleteCategoriesUseCases
 
         $category->delete();
 
-        return $category;
+        return ['message' => 'Category deleted successfully'];
     }
 }
