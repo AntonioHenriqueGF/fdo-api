@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Categories\Http\Controllers\CategoriesController;
+use App\Modules\Categories\Http\Controllers\RulesController;
 use App\Modules\Imports\Http\Controllers\ImportsController;
 use App\Modules\Transactions\Http\Controllers\BalanceController;
 use App\Modules\Transactions\Http\Controllers\TransactionsController;
@@ -31,4 +32,6 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::resource('categories', CategoriesController::class);
+
+    Route::resource('categories.rules', RulesController::class)->except(['create', 'edit', 'show']);
 });

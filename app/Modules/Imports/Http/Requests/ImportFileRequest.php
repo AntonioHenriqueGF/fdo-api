@@ -10,7 +10,7 @@ class ImportFileRequest extends FormRequest
     {
         return true; // Allow all users to make this request, adjust as needed
     }
-    
+
     public function rules(): array
     {
         return [

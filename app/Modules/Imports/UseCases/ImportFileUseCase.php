@@ -28,7 +28,7 @@ class ImportFileUseCase
     public function execute($data)
     {
         $user = Auth::user();
-        $userId = $user->id;
+        $userId = $user->use_id;
 
         $binHex = hex2bin($data['fileHash']);
         if ($binHex === false) {

@@ -21,7 +21,7 @@ class ImportsController extends Controller
             return $this->errorResponse('Invalid argument: ' . $th->getMessage(), 400);
         } catch (\Exception $th) {
             // Handle any other exceptions that may occur
-            return $this->errorResponse('An error occurred while importing the file.', 500);
+            return $this->errorResponse('An error occurred while importing the file.', $th->getMessage(), 500);
         }
     }
 }
