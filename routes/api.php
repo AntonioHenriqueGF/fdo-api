@@ -29,6 +29,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::group(['prefix' => 'transactions'], function () {
         Route::get('/daily', [TransactionsController::class, 'getDailyTransactions']);
         Route::get('/monthly', [TransactionsController::class, 'getMonthlyTransactions']);
+        Route::post('/reconciliation/daily', [TransactionsController::class, 'getDailyReconciliation']);
     });
 
     Route::resource('categories', CategoriesController::class);

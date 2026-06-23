@@ -17,9 +17,8 @@ class TransactionsModel extends Model
      * @param int $userId
      * @param int $importId
      * @param array $transactions Array of transactions, each containing 'date_yyyymmdd', 'amount', and 'description'
-     * @return void
      */
-    public function saveTransactions($userId, $importId, $transactions)
+    public function saveTransactions(int $userId, int $importId, array $transactions): void
     {
         // Implement logic to save the transactions to the database
         // For example, you can iterate through the list of transactions and create a new record for each one in the transactions table
@@ -40,14 +39,25 @@ class TransactionsModel extends Model
     /**
      * Retrieves the total balance of the daily transactions for a given user.
      * @param int $userId
+     * @param string|null $dateStart
+     * @param string|null $dateEnd
      * @return array
      */
-    public function getDailyTransactions($userId)
+    public function getDailyTransactions(int $userId, ?string $dateStart = null, ?string $dateEnd = null): array
     {
-        return DB::table('transactions')
+        $query = DB::table('transactions')
             ->select('tra_date', DB::raw('SUM(tra_amount) as total_amount'))
-            ->where('tra_user_id', $userId)
-            ->groupBy('tra_date')
+            ->where('tra_user_id', $userId);
+
+        if ($dateStart) {
+            $query->where('tra_date', '>=', $dateStart);
+        }
+
+        if ($dateEnd) {
+            $query->where('tra_date', '<=', $dateEnd);
+        }
+
+        return $query->groupBy('tra_date')
             ->orderBy('tra_date', 'asc')
             ->get()
             ->toArray();
@@ -56,15 +66,54 @@ class TransactionsModel extends Model
     /**
      * Retrieves the total balance of the monthly transactions for a given user.
      * @param int $userId
+     * @param string|null $dateStart
+     * @param string|null $dateEnd
      * @return array
      */
-    public function getMonthlyTransactions($userId)
+    public function getMonthlyTransactions(int $userId, ?string $dateStart = null, ?string $dateEnd = null): array
     {
-        return DB::table('transactions')
+        $query = DB::table('transactions')
             ->select(DB::raw('DATE_FORMAT(tra_date, "%Y-%m") as month'), DB::raw('SUM(tra_amount) as total_amount'))
-            ->where('tra_user_id', $userId)
-            ->groupBy(DB::raw('DATE_FORMAT(tra_date, "%Y-%m")'))
+            ->where('tra_user_id', $userId);
+
+        if ($dateStart) {
+            $query->where('tra_date', '>=', $dateStart);
+        }
+
+        if ($dateEnd) {
+            $query->where('tra_date', '<=', $dateEnd);
+        }
+
+        return $query->groupBy(DB::raw('DATE_FORMAT(tra_date, "%Y-%m")'))
             ->orderBy(DB::raw('DATE_FORMAT(tra_date, "%Y-%m")'), 'asc')
+            ->get()
+            ->toArray();
+    }
+
+    /**
+     * Retrieves the total balance of the daily transactions along with the closing balance for a given user.
+     * @param int $userId
+     * @param string|null $dateStart
+     * @param string|null $dateEnd
+     * @return array
+     */
+    public function getTransactionsWithBalance(int $userId, ?string $dateStart = null, ?string $dateEnd = null): array
+    {
+        $query = DB::table('transactions')
+            ->select('tra_date', DB::raw('SUM(tra_amount) as total_amount'), 'daily_balances.dba_closing_balance')
+            ->join('daily_balances', 'transactions.tra_date', '=', 'daily_balances.dba_date')
+            ->where('tra_user_id', $userId);
+
+        if ($dateStart) {
+            $query->where('tra_date', '>=', $dateStart);
+        }
+
+        if ($dateEnd) {
+            $query->where('tra_date', '<=', $dateEnd);
+        }
+
+        return $query->groupBy('tra_date', 'daily_balances.dba_closing_balance')
+            ->orderBy('tra_date', 'asc')
             ->get()
             ->toArray();
     }
