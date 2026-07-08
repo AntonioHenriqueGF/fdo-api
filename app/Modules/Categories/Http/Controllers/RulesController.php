@@ -7,6 +7,7 @@ use App\Modules\Categories\Http\Requests\CreateRulesRequest;
 use App\Modules\Categories\UseCases\CreateRulesUseCases;
 use App\Modules\Categories\UseCases\DeleteRulesUseCases;
 use App\Modules\Categories\UseCases\ListRulesUseCases;
+use App\Modules\Categories\UseCases\ReprocessRulesUseCases;
 use App\Modules\Categories\UseCases\UpdateRulesUseCases;
 
 class RulesController extends Controller
@@ -52,6 +53,16 @@ class RulesController extends Controller
             return $this->errorResponse($th->getMessage(), 404);
         } catch (\Throwable $th) {
             return $this->errorResponse('An error occurred while updating the rule', $th->getMessage(), 500);
+        }
+    }
+
+    public function reprocessRules(ReprocessRulesUseCases $useCase)
+    {
+        try {
+            $useCase->execute();
+            return $this->successResponse('Rules reprocessing job dispatched successfully');
+        } catch (\Throwable $th) {
+            return $this->errorResponse('An error occurred while dispatching the reprocessing job', $th->getMessage(), 500);
         }
     }
 }

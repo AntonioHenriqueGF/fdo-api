@@ -12,6 +12,16 @@ class TransactionsModel extends Model
     // Define your model properties and methods here
     protected $table = 'transactions';
 
+    protected $primaryKey = 'tra_id';
+
+    // Allows mass assignment for the specified fields
+    protected $fillable = [
+        'tra_matched_rule_id',
+        'tra_category_id',
+    ];
+
+    public $timestamps = false;
+
     /**
      * Saves a list of transactions for a given user and import.
      * @param int $userId

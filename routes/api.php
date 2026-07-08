@@ -35,4 +35,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::resource('categories', CategoriesController::class);
 
     Route::resource('categories.rules', RulesController::class)->except(['create', 'edit', 'show']);
+
+    Route::post('/reprocess-rules', [RulesController::class, 'reprocessRules']);
 });
