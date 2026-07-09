@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\JobRequestsController;
 use App\Modules\Categories\Http\Controllers\CategoriesController;
 use App\Modules\Categories\Http\Controllers\RulesController;
 use App\Modules\Imports\Http\Controllers\ImportsController;
@@ -17,6 +18,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/me', [LoginController::class, 'me']);
 
+    Route::get('/job-requests/{jobRequestId}', [JobRequestsController::class, 'show']);
+
     Route::post('/logout', [LoginController::class, 'logout']);
 
     Route::post('/import', [ImportsController::class, 'import']);
@@ -31,6 +34,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/monthly', [TransactionsController::class, 'getMonthlyTransactions']);
         Route::post('/reconciliation/daily', [TransactionsController::class, 'getDailyReconciliation']);
     });
+
+    Route::resource('transactions', TransactionsController::class)->only(['index', 'create', 'edit', 'show']);
 
     Route::resource('categories', CategoriesController::class);
 
