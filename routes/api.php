@@ -38,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::resource('transactions', TransactionsController::class)->only(['index', 'create', 'edit', 'show']);
 
     Route::resource('categories', CategoriesController::class);
+    Route::patch('/categories/{id}/income', [CategoriesController::class, 'updateIncome']);
 
     Route::resource('categories.rules', RulesController::class)->except(['create', 'edit', 'show']);
 

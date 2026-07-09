@@ -15,5 +15,6 @@ class CategoriesModel extends Model
     protected $fillable = [
         'cat_user_id',
         'cat_description',
+        'cat_is_income',
     ];
 }
