@@ -12,16 +12,13 @@ class ImportsController extends Controller
     {
         try {
             $data = $request->validated();
-
-            // Process the imported data using the use case
             $result = $importFileUseCase->execute($data);
 
-            return $this->successResponse('File imported successfully!', $result);
+            return $this->successResponse('File import job dispatched successfully!', $result);
         } catch (\InvalidArgumentException $th) {
             return $this->errorResponse('Invalid argument: ' . $th->getMessage(), 400);
         } catch (\Exception $th) {
-            // Handle any other exceptions that may occur
-            return $this->errorResponse('An error occurred while importing the file.', $th->getMessage(), 500);
+            return $this->errorResponse('An error occurred while dispatching file import.', $th->getMessage(), 500);
         }
     }
 }

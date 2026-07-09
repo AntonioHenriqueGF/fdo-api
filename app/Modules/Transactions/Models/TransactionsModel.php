@@ -2,8 +2,10 @@
 
 namespace App\Modules\Transactions\Models;
 
+use App\Modules\Categories\Models\RulesModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 // Model will serve as the eloquent class to interact with the database
 
@@ -29,18 +31,37 @@ class TransactionsModel extends Model
      */
     public function saveTransactions(int $userId, int $importId, array $transactions): void
     {
+        $rules = RulesModel::where('rul_user_id', $userId)
+            ->orderByDesc('rul_priority')
+            ->get();
+
         // Implement logic to save the transactions to the database
         // For example, you can iterate through the list of transactions and create a new record for each one in the transactions table
         foreach ($transactions as $transaction) {
             if (! isset($transaction['date_yyyymmdd']) || ! isset($transaction['amount']) || ! isset($transaction['description'])) {
                 throw new \InvalidArgumentException('Each transaction must contain date_yyyymmdd, amount, and description.');
             }
+
+            $matchedRuleId = null;
+            $matchedCategoryId = null;
+
+            foreach ($rules as $rule) {
+                if (preg_match("/$rule->rul_pattern/", $transaction['description'])) {
+                    Log::info("Transaction description '{$transaction['description']}' matched rule pattern '{$rule->rul_pattern}' for user ID {$userId}.");
+                    $matchedRuleId = $rule->rul_id;
+                    $matchedCategoryId = $rule->rul_category_id;
+                    break;
+                }
+            }
+
             DB::table('transactions')->insert([
                 'tra_user_id' => $userId,
                 'tra_import_id' => $importId,
                 'tra_date' => $transaction['date_yyyymmdd'],
                 'tra_amount' => $transaction['amount'],
                 'tra_description' => $transaction['description'],
+                'tra_matched_rule_id' => $matchedRuleId,
+                'tra_category_id' => $matchedCategoryId,
             ]);
         }
     }
