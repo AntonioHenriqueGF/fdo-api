@@ -20,7 +20,9 @@ class JobRequestUpdated implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel("users.{$this->jobRequest->user_id}")
+            new PrivateChannel(
+                "App.Models.User.{$this->jobRequest->user_id}"
+            ),
         ];
     }
 
@@ -35,7 +37,9 @@ class JobRequestUpdated implements ShouldBroadcast
             'id' => $this->jobRequest->id,
             'type' => $this->jobRequest->type,
             'status' => $this->jobRequest->status,
-            'finished_at' => $this->jobRequest->finished_at,
+            'started_at' => $this->jobRequest->started_at,
+            'completed_at' => $this->jobRequest->completed_at,
+            'error' => $this->jobRequest->error_message,
         ];
     }
 }

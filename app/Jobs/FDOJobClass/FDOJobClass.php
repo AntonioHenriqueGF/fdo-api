@@ -2,6 +2,7 @@
 
 namespace App\Jobs\FDOJobClass;
 
+use App\Broadcast\JobRequestUpdated;
 use App\Models\JobRequestsModel;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
@@ -9,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Throwable;
 
 abstract class FDOJobClass implements ShouldQueue
 {
@@ -26,14 +28,27 @@ abstract class FDOJobClass implements ShouldQueue
 
     public function handle(): void
     {
-        $this->jobRequest = (new JobRequestsModel())->createJobRequest($this->user->use_id, $this->jobType);
+        $this->jobRequest = (new JobRequestsModel)->createJobRequest($this->user->use_id, $this->jobType);
 
         try {
             $this->jobRequest->startJobRequest($this->jobRequest->id);
+
             $this->process();
+
             $this->jobRequest->completeJobRequest($this->jobRequest->id);
-        } catch (\Exception $e) {
+            $this->dispatchJobRequestUpdated();
+        } catch (Throwable $e) {
             $this->jobRequest->failJobRequest($this->jobRequest->id, $e->getMessage());
+            $this->dispatchJobRequestUpdated();
+
+            throw $e;
         }
+    }
+
+    protected function dispatchJobRequestUpdated(): void
+    {
+        $this->jobRequest->refresh();
+
+        event(new JobRequestUpdated($this->jobRequest));
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Broadcast\JobRequestUpdated;
 use Illuminate\Database\Eloquent\Model;
 
 class JobRequestsModel extends Model
@@ -24,11 +23,15 @@ class JobRequestsModel extends Model
     public $timestamps = true;
 
     const CREATED_AT = 'created_at';
+
     const UPDATED_AT = 'updated_at';
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_IN_PROGRESS = 'in_progress';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_FAILED = 'failed';
 
     public function user()
@@ -49,7 +52,7 @@ class JobRequestsModel extends Model
     {
         $jobRequest = self::find($jobRequestId);
 
-        if (!$jobRequest) {
+        if (! $jobRequest) {
             return false;
         }
 
@@ -63,7 +66,7 @@ class JobRequestsModel extends Model
     {
         $jobRequest = self::find($jobRequestId);
 
-        if (!$jobRequest) {
+        if (! $jobRequest) {
             return false;
         }
 
@@ -78,17 +81,13 @@ class JobRequestsModel extends Model
     {
         $jobRequest = self::find($jobRequestId);
 
-        if (!$jobRequest) {
+        if (! $jobRequest) {
             return false;
         }
 
         $jobRequest->status = self::STATUS_COMPLETED;
         $jobRequest->completed_at = now();
 
-        $newJobRequest = $jobRequest->save();
-
-        broadcast(new JobRequestUpdated($newJobRequest));
-
-        return $newJobRequest;
+        return $jobRequest->save();
     }
 }

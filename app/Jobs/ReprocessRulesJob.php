@@ -3,10 +3,8 @@
 namespace App\Jobs;
 
 use App\Jobs\FDOJobClass\FDOJobClass;
-use App\Models\JobRequestsModel;
 use App\Models\User;
 use App\Modules\Categories\Services\ReprocessRulesService;
-use Illuminate\Support\Facades\Log;
 
 class ReprocessRulesJob extends FDOJobClass
 {
@@ -17,7 +15,7 @@ class ReprocessRulesJob extends FDOJobClass
     public function __construct(
         protected User $user
     ) {
-        $this->reprocessRulesService = new ReprocessRulesService();
+        $this->reprocessRulesService = new ReprocessRulesService;
     }
 
     public function process(): void
