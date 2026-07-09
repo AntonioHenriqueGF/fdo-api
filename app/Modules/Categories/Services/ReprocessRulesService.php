@@ -18,7 +18,7 @@ class ReprocessRulesService
         TransactionsModel::where('tra_user_id', $userId)->chunkById(1000, function ($transactions) use ($rulesModel) {
             foreach ($transactions as $transaction) {
                 foreach ($rulesModel as $rule) {
-                    if (preg_match($rule->rul_pattern, $transaction->tra_description)) {
+                    if (preg_match("/$rule->rul_pattern/", $transaction->tra_description)) {
                         // Apply the rule to the transaction
                         // For example, you might want to update a field in the transaction or log the match
                         $transaction->update(['tra_matched_rule_id' => $rule->rul_id, 'tra_category_id' => $rule->rul_category_id]);
