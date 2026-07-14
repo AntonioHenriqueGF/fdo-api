@@ -4,6 +4,7 @@ namespace App\Modules\Transactions\Models;
 
 use App\Modules\Categories\Models\RulesModel;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -24,6 +25,56 @@ class TransactionsModel extends Model
 
     public $timestamps = false;
 
+    public function createTransaction(int $userId, array $data): array
+    {
+        $rules = RulesModel::where('rul_user_id', $userId)
+            ->orderByDesc('rul_priority')
+            ->get();
+
+        [$matchedRuleId, $matchedCategoryId] = $this->matchTransactionByRules($rules, $data['tra_description'], $userId);
+
+        $importId = DB::table('imports')
+            ->where('imp_user_id', $userId)
+            ->orderByDesc('imp_id')
+            ->value('imp_id');
+
+        if (! $importId) {
+            throw new \InvalidArgumentException('No import found for authenticated user.');
+        }
+
+        $transactionId = DB::table('transactions')->insertGetId([
+            'tra_user_id' => $userId,
+            'tra_import_id' => $importId,
+            'tra_date' => $data['tra_date'],
+            'tra_amount' => $data['tra_amount'],
+            'tra_description' => $data['tra_description'],
+            'tra_matched_rule_id' => $matchedRuleId,
+            'tra_category_id' => $matchedCategoryId,
+        ]);
+
+        $transaction = DB::table('transactions')
+            ->select(
+                'tra_id',
+                'tra_user_id',
+                'tra_import_id',
+                'tra_date',
+                'tra_amount',
+                'tra_description',
+                'tra_matched_rule_id',
+                'tra_category_id',
+                'cat_description'
+            )
+            ->leftJoin('categories', 'tra_category_id', '=', 'cat_id')
+            ->where('tra_id', $transactionId)
+            ->first();
+
+        if (! $transaction) {
+            throw new \RuntimeException('Failed to retrieve the created transaction.');
+        }
+
+        return (array) $transaction;
+    }
+
     /**
      * Saves a list of transactions for a given user and import.
      *
@@ -42,17 +93,7 @@ class TransactionsModel extends Model
                 throw new \InvalidArgumentException('Each transaction must contain date_yyyymmdd, amount, and description.');
             }
 
-            $matchedRuleId = null;
-            $matchedCategoryId = null;
-
-            foreach ($rules as $rule) {
-                if (preg_match("/$rule->rul_pattern/", $transaction['description'])) {
-                    Log::info("Transaction description '{$transaction['description']}' matched rule pattern '{$rule->rul_pattern}' for user ID {$userId}.");
-                    $matchedRuleId = $rule->rul_id;
-                    $matchedCategoryId = $rule->rul_category_id;
-                    break;
-                }
-            }
+            [$matchedRuleId, $matchedCategoryId] = $this->matchTransactionByRules($rules, $transaction['description'], $userId);
 
             DB::table('transactions')->insert([
                 'tra_user_id' => $userId,
@@ -64,6 +105,23 @@ class TransactionsModel extends Model
                 'tra_category_id' => $matchedCategoryId,
             ]);
         }
+    }
+
+    private function matchTransactionByRules(Collection $rules, string $description, int $userId): array
+    {
+        $matchedRuleId = null;
+        $matchedCategoryId = null;
+
+        foreach ($rules as $rule) {
+            if (preg_match("/$rule->rul_pattern/", $description)) {
+                Log::info("Transaction description '{$description}' matched rule pattern '{$rule->rul_pattern}' for user ID {$userId}.");
+                $matchedRuleId = $rule->rul_id;
+                $matchedCategoryId = $rule->rul_category_id;
+                break;
+            }
+        }
+
+        return [$matchedRuleId, $matchedCategoryId];
     }
 
     /**
@@ -178,7 +236,7 @@ class TransactionsModel extends Model
         $result['total'] = $query->count();
 
         if (isset($filters['limitStart']) && isset($filters['limitEnd'])) {
-            $query->offset($filters['limitStart'])->limit($filters['limitEnd'] - $filters['limitStart']);
+            $query->offset($filters['limitStart'])->limit($filters['limitEnd']);
         }
 
         $result['rows'] = $query->orderBy('tra_date', 'asc')
@@ -186,5 +244,45 @@ class TransactionsModel extends Model
             ->toArray();
 
         return $result;
+    }
+
+    public function deleteTransaction(int $transactionId): void
+    {
+        $deleted = DB::table('transactions')->where('tra_id', $transactionId)->delete();
+
+        if ($deleted === 0) {
+            throw new \InvalidArgumentException("Transaction with ID {$transactionId} not found.");
+        }
+    }
+
+    public function updateTransaction(int $transactionId, array $data): array
+    {
+        $updated = DB::table('transactions')->where('tra_id', $transactionId)->update($data);
+
+        if ($updated === 0) {
+            throw new \InvalidArgumentException("Transaction with ID {$transactionId} not found or no changes made.");
+        }
+
+        $transaction = DB::table('transactions')
+            ->select(
+                'tra_id',
+                'tra_user_id',
+                'tra_import_id',
+                'tra_date',
+                'tra_amount',
+                'tra_description',
+                'tra_matched_rule_id',
+                'tra_category_id',
+                'cat_description'
+            )
+            ->leftJoin('categories', 'tra_category_id', '=', 'cat_id')
+            ->where('tra_id', $transactionId)
+            ->first();
+
+        if (! $transaction) {
+            throw new \RuntimeException('Failed to retrieve the updated transaction.');
+        }
+
+        return (array) $transaction;
     }
 }

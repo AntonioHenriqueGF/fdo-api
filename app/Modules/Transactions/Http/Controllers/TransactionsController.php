@@ -3,12 +3,17 @@
 namespace App\Modules\Transactions\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Transactions\Http\Requests\CreateTransactionRequest;
 use App\Modules\Transactions\Http\Requests\ListTransactionsRequest;
 use App\Modules\Transactions\Http\Requests\TimeIntervalRequest;
+use App\Modules\Transactions\Http\Requests\UpdateTransactionRequest;
+use App\Modules\Transactions\UseCases\CreateTransactionUseCase;
 use App\Modules\Transactions\UseCases\DailyReconciliationUseCase;
 use App\Modules\Transactions\UseCases\DailyTransactionsUseCase;
+use App\Modules\Transactions\UseCases\DeleteTransactionUseCase;
 use App\Modules\Transactions\UseCases\ListTransactionsUseCase;
 use App\Modules\Transactions\UseCases\MonthlyTransactionsUseCase;
+use App\Modules\Transactions\UseCases\UpdateTransactionUseCase;
 
 class TransactionsController extends Controller
 {
@@ -45,18 +50,42 @@ class TransactionsController extends Controller
         }
     }
 
-    public function create()
+    public function store(CreateTransactionRequest $request, CreateTransactionUseCase $createTransactionUseCase)
     {
-        // Implement the logic for creating a transaction
+        try {
+            $transaction = $createTransactionUseCase->execute($request->validated());
+
+            return $this->successResponse('Transaction created successfully', $transaction, 201);
+        } catch (\InvalidArgumentException $th) {
+            return $this->errorResponse($th->getMessage(), null, 400);
+        } catch (\Throwable $th) {
+            return $this->errorResponse('Failed to create transaction', $th->getMessage(), 500);
+        }
     }
 
-    public function edit($id)
+    public function update(int $id, UpdateTransactionRequest $request, UpdateTransactionUseCase $updateTransactionUseCase)
     {
-        // Implement the logic for editing a transaction
+        try {
+            $transaction = $updateTransactionUseCase->execute($id, $request->validated());
+
+            return $this->successResponse('Transaction updated successfully', $transaction);
+        } catch (\InvalidArgumentException $th) {
+            return $this->errorResponse($th->getMessage(), null, 400);
+        } catch (\Throwable $th) {
+            return $this->errorResponse('Failed to update transaction', $th->getMessage(), 500);
+        }
     }
 
-    public function show($id)
+    public function destroy(int $id, DeleteTransactionUseCase $deleteTransactionUseCase)
     {
-        // Implement the logic for showing a specific transaction
+        try {
+            $deleteTransactionUseCase->execute($id);
+
+            return $this->successResponse('Transaction deleted successfully');
+        } catch (\InvalidArgumentException $th) {
+            return $this->errorResponse($th->getMessage(), null, 400);
+        } catch (\Throwable $th) {
+            return $this->errorResponse('Failed to delete transaction', $th->getMessage(), 500);
+        }
     }
 }

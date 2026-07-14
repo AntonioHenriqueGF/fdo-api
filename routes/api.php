@@ -35,7 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/reconciliation/daily', [TransactionsController::class, 'getDailyReconciliation']);
     });
 
-    Route::resource('transactions', TransactionsController::class)->only(['index', 'create', 'edit', 'show']);
+    Route::resource('transactions', TransactionsController::class)->only(['index', 'store', 'update', 'destroy']);
 
     Route::resource('categories', CategoriesController::class);
     Route::patch('/categories/{id}/income', [CategoriesController::class, 'updateIncome']);

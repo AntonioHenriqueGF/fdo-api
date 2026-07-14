@@ -14,7 +14,7 @@ class ListTransactionsRequest extends FormRequest
             'category_id' => 'nullable|integer|exists:categories,cat_id',
             'rule_id' => 'nullable|integer|exists:rules,rul_id',
             'limitStart' => 'nullable|numeric',
-            'limitEnd' => 'nullable|numeric|gte:limitStart',
+            'limitEnd' => 'nullable|numeric',
         ];
     }
 }
