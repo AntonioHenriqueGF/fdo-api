@@ -241,7 +241,7 @@ class TransactionsModel extends Model
             ->toArray();
     }
 
-    public function listTransactions(array $filters = [], int $userId): array
+    public function listTransactions(array $filters, int $userId): array
     {
         if (!$userId) {
             throw new \InvalidArgumentException('User ID is required to list transactions.');
@@ -316,18 +316,18 @@ class TransactionsModel extends Model
         return $query;
     }
 
-    public function deleteTransaction(int $transactionId): void
+    public function deleteTransaction(int $transactionId, int $userId): void
     {
-        $deleted = DB::table('transactions')->where('tra_id', $transactionId)->delete();
+        $deleted = DB::table('transactions')->where('tra_id', $transactionId)->where('tra_user_id', $userId)->delete();
 
         if ($deleted === 0) {
             throw new \InvalidArgumentException("Transaction with ID {$transactionId} not found.");
         }
     }
 
-    public function updateTransaction(int $transactionId, array $data): array
+    public function updateTransaction(int $transactionId, array $data, int $userId): array
     {
-        $updated = DB::table('transactions')->where('tra_id', $transactionId)->update($data);
+        $updated = DB::table('transactions')->where('tra_id', $transactionId)->where('tra_user_id', $userId)->update($data);
 
         if ($updated === 0) {
             throw new \InvalidArgumentException("Transaction with ID {$transactionId} not found or no changes made.");

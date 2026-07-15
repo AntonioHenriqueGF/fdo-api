@@ -2,22 +2,22 @@
 
 namespace App\Modules\Transactions\UseCases;
 
-use App\Modules\Transactions\Models\TransactionsModel;
+use App\Modules\Transactions\Models\DailyBalancesModel;
 use App\Modules\Users\UseCases\MeUseCase;
 
-class DeleteTransactionUseCase
+class DeleteBalanceUseCase
 {
     public function __construct(
-        private TransactionsModel $transactionsModel,
+        private DailyBalancesModel $dailyBalancesModel,
         private MeUseCase $meUseCase
     ) {
         // Initialize any dependencies if needed
     }
 
-    public function execute(int $transactionId): void
+    public function execute(int $balanceId): void
     {
         $userId = $this->meUseCase->execute()->use_id;
 
-        $this->transactionsModel->deleteTransaction($transactionId, $userId);
+        $this->dailyBalancesModel->deleteBalance($balanceId, $userId);
     }
 }

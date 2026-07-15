@@ -40,6 +40,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::resource('transactions', TransactionsController::class)->only(['index', 'store', 'update', 'destroy']);
 
+    Route::resource('daily-balances', BalanceController::class)->only(['index', 'store', 'update', 'destroy']);
+
     Route::resource('categories', CategoriesController::class);
     Route::patch('/categories/{id}/income', [CategoriesController::class, 'updateIncome']);
 
