@@ -241,8 +241,11 @@ class TransactionsModel extends Model
             ->toArray();
     }
 
-    public function listTransactions(array $filters = []): array
+    public function listTransactions(array $filters = [], int $userId): array
     {
+        if (!$userId) {
+            throw new \InvalidArgumentException('User ID is required to list transactions.');
+        }
         $query = DB::table('transactions')
             ->select(
                 'tra_id',
@@ -258,9 +261,7 @@ class TransactionsModel extends Model
 
         $query->leftJoin('categories', 'tra_category_id', '=', 'cat_id');
 
-        if (isset($filters['user_id'])) {
-            $query->where('tra_user_id', $filters['user_id']);
-        }
+        $query->where('tra_user_id', $userId);
 
         if (isset($filters['import_id'])) {
             $query->where('tra_import_id', $filters['import_id']);
