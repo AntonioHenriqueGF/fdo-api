@@ -3,25 +3,50 @@
 namespace App\Modules\Transactions\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Transactions\Http\Requests\CategoryTransactionsRequest;
 use App\Modules\Transactions\Http\Requests\CreateTransactionRequest;
 use App\Modules\Transactions\Http\Requests\ListTransactionsRequest;
 use App\Modules\Transactions\Http\Requests\TimeIntervalRequest;
 use App\Modules\Transactions\Http\Requests\UpdateTransactionRequest;
+use App\Modules\Transactions\UseCases\CategoryTransactionsUseCase;
 use App\Modules\Transactions\UseCases\CreateTransactionUseCase;
+use App\Modules\Transactions\UseCases\DailyCategoryTransactionsUseCase;
 use App\Modules\Transactions\UseCases\DailyReconciliationUseCase;
 use App\Modules\Transactions\UseCases\DailyTransactionsUseCase;
 use App\Modules\Transactions\UseCases\DeleteTransactionUseCase;
 use App\Modules\Transactions\UseCases\ListTransactionsUseCase;
+use App\Modules\Transactions\UseCases\MonthlyCategoryTransactionsUseCase;
 use App\Modules\Transactions\UseCases\MonthlyTransactionsUseCase;
 use App\Modules\Transactions\UseCases\UpdateTransactionUseCase;
 
 class TransactionsController extends Controller
 {
+    public function getCategoryTransactions(CategoryTransactionsRequest $request, CategoryTransactionsUseCase $categoryTransactionsUseCase)
+    {
+        $categoryTransactions = $categoryTransactionsUseCase->execute($request->validated());
+
+        return $this->successResponse('Category transactions retrieved successfully', $categoryTransactions);
+    }
+
+    public function getDailyCategoryTransactions(CategoryTransactionsRequest $request, DailyCategoryTransactionsUseCase $dailyCategoryTransactionsUseCase)
+    {
+        $categoryTransactions = $dailyCategoryTransactionsUseCase->execute($request->validated());
+
+        return $this->successResponse('Daily category transactions retrieved successfully', $categoryTransactions);
+    }
+
     public function getDailyTransactions(DailyTransactionsUseCase $dailyTransactionsUseCase)
     {
         $dailyTransactions = $dailyTransactionsUseCase->execute();
 
         return $this->successResponse('Daily transactions retrieved successfully', $dailyTransactions);
+    }
+
+    public function getMonthlyCategoryTransactions(CategoryTransactionsRequest $request, MonthlyCategoryTransactionsUseCase $monthlyCategoryTransactionsUseCase)
+    {
+        $categoryTransactions = $monthlyCategoryTransactionsUseCase->execute($request->validated());
+
+        return $this->successResponse('Monthly category transactions retrieved successfully', $categoryTransactions);
     }
 
     public function getMonthlyTransactions(MonthlyTransactionsUseCase $monthlyTransactionsUseCase)

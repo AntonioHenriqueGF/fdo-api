@@ -30,6 +30,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::group(['prefix' => 'transactions'], function () {
+        Route::get('/categories/total', [TransactionsController::class, 'getCategoryTransactions']);
+        Route::get('/categories/daily', [TransactionsController::class, 'getDailyCategoryTransactions']);
+        Route::get('/categories/monthly', [TransactionsController::class, 'getMonthlyCategoryTransactions']);
         Route::get('/daily', [TransactionsController::class, 'getDailyTransactions']);
         Route::get('/monthly', [TransactionsController::class, 'getMonthlyTransactions']);
         Route::post('/reconciliation/daily', [TransactionsController::class, 'getDailyReconciliation']);

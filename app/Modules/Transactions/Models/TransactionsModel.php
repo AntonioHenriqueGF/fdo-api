@@ -4,6 +4,7 @@ namespace App\Modules\Transactions\Models;
 
 use App\Modules\Categories\Models\RulesModel;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -170,6 +171,52 @@ class TransactionsModel extends Model
             ->toArray();
     }
 
+    public function getCategoryTransactions(int $userId, ?string $dateStart = null, ?string $dateEnd = null, array $categoryIds = []): array
+    {
+        return $this->categoryTransactionsBaseQuery($userId, $dateStart, $dateEnd, $categoryIds)
+            ->select(
+                'tra_category_id as category_id',
+                'cat_description as category_description',
+                DB::raw('SUM(tra_amount) as total_amount')
+            )
+            ->groupBy('tra_category_id', 'cat_description')
+            ->orderBy('cat_description')
+            ->get()
+            ->toArray();
+    }
+
+    public function getDailyCategoryTransactions(int $userId, ?string $dateStart = null, ?string $dateEnd = null, array $categoryIds = []): array
+    {
+        return $this->categoryTransactionsBaseQuery($userId, $dateStart, $dateEnd, $categoryIds)
+            ->select(
+                'tra_category_id as category_id',
+                'cat_description as category_description',
+                DB::raw('DATE(tra_date) as date'),
+                DB::raw('SUM(tra_amount) as total_amount')
+            )
+            ->groupBy('tra_category_id', 'cat_description', DB::raw('DATE(tra_date)'))
+            ->orderBy('cat_description')
+            ->orderBy('date')
+            ->get()
+            ->toArray();
+    }
+
+    public function getMonthlyCategoryTransactions(int $userId, ?string $dateStart = null, ?string $dateEnd = null, array $categoryIds = []): array
+    {
+        return $this->categoryTransactionsBaseQuery($userId, $dateStart, $dateEnd, $categoryIds)
+            ->select(
+                'tra_category_id as category_id',
+                'cat_description as category_description',
+                DB::raw('DATE_FORMAT(tra_date, "%Y-%m") as month'),
+                DB::raw('SUM(tra_amount) as total_amount')
+            )
+            ->groupBy('tra_category_id', 'cat_description', DB::raw('DATE_FORMAT(tra_date, "%Y-%m")'))
+            ->orderBy('cat_description')
+            ->orderBy('month')
+            ->get()
+            ->toArray();
+    }
+
     /**
      * Retrieves the total balance of the daily transactions along with the closing balance for a given user.
      */
@@ -244,6 +291,28 @@ class TransactionsModel extends Model
             ->toArray();
 
         return $result;
+    }
+
+    private function categoryTransactionsBaseQuery(int $userId, ?string $dateStart = null, ?string $dateEnd = null, array $categoryIds = []): Builder
+    {
+        $query = DB::table('transactions')
+            ->join('categories', 'tra_category_id', '=', 'cat_id')
+            ->where('tra_user_id', $userId)
+            ->where('cat_user_id', $userId);
+
+        if ($dateStart) {
+            $query->where('tra_date', '>=', $dateStart);
+        }
+
+        if ($dateEnd) {
+            $query->where('tra_date', '<=', $dateEnd);
+        }
+
+        if ($categoryIds !== []) {
+            $query->whereIn('tra_category_id', $categoryIds);
+        }
+
+        return $query;
     }
 
     public function deleteTransaction(int $transactionId): void
