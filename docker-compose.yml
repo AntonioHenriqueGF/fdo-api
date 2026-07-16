@@ -1,0 +1,167 @@
+networks:
+  fdo_network:
+    driver: bridge
+
+volumes:
+  # O padrão proficional de persistência é por bind mount, mas para facilitar o uso em ambientes de desenvolvimento
+  # e testes que rodam em Windows, utilizamos um "volume nomeado" gerenciado pelo Docker.
+  db_data:
+  certbot-etc:
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: php artisan serve --host=0.0.0.0 --port=8080
+    environment:
+      APP_KEY: ${APP_KEY:?APP_KEY must be set in .env}
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-fdo_api}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-root}
+      QUEUE_CONNECTION: database
+      BROADCAST_CONNECTION: reverb
+      REVERB_APP_ID: ${REVERB_APP_ID:-329912}
+      REVERB_APP_KEY: ${REVERB_APP_KEY:-local-reverb-key}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-local-reverb-secret}
+      REVERB_SERVER_HOST: 0.0.0.0
+      REVERB_SERVER_PORT: 8081
+      REVERB_HOST: reverb
+      REVERB_PORT: 8081
+      REVERB_SCHEME: http
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - fdo_network
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: supervisord -c /var/www/html/docker/supervisor/worker.conf
+    environment:
+      APP_KEY: ${APP_KEY:?APP_KEY must be set in .env}
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-fdo_api}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-root}
+      QUEUE_CONNECTION: database
+      BROADCAST_CONNECTION: reverb
+      REVERB_APP_ID: ${REVERB_APP_ID:-329912}
+      REVERB_APP_KEY: ${REVERB_APP_KEY:-local-reverb-key}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-local-reverb-secret}
+      REVERB_HOST: reverb
+      REVERB_PORT: 8081
+      REVERB_SCHEME: http
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - fdo_network
+
+  reverb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: php artisan reverb:start --host=0.0.0.0 --port=8081
+    ports:
+      - "8081:8081"
+    environment:
+      APP_KEY: ${APP_KEY:?APP_KEY must be set in .env}
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-fdo_api}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-root}
+      QUEUE_CONNECTION: database
+      BROADCAST_CONNECTION: reverb
+      REVERB_APP_ID: ${REVERB_APP_ID:-329912}
+      REVERB_APP_KEY: ${REVERB_APP_KEY:-local-reverb-key}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-local-reverb-secret}
+      REVERB_SERVER_HOST: 0.0.0.0
+      REVERB_SERVER_PORT: 8081
+      REVERB_HOST: reverb
+      REVERB_PORT: 8081
+      REVERB_SCHEME: http
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - fdo_network
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx/nginx.dockerfile
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+      reverb:
+        condition: service_started
+    environment:
+      NGINX_SERVER_NAME: ${NGINX_SERVER_NAME:-localhost}
+    networks:
+      - fdo_network
+
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-fdo_api}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+    networks:
+      - fdo_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - db_data:/var/lib/mysql
+    # Exemplo de bind mount para persistência local:
+    # - /srv/fdo/volumes/mysql:/var/lib/mysql
+    # Obs: Ao utilizar bind mount em Windows, certifique-se de que o diretório existe e possui as permissões corretas.
+  
+  migrate:
+    # Por questões de segurança, a porta 3306 do MySQL não é exposta para fora do container.
+    # Este serviço é responsável por aplicar as migrações no banco de dados de dentro da rede do Docker, garantindo que o banco de dados esteja acessível apenas para os serviços que precisam dele.
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: php artisan migrate --force
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_KEY: ${APP_KEY:?APP_KEY must be set in .env}
+      APP_ENV: local
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-fdo_api}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-root}
+      REVERB_APP_ID: ${REVERB_APP_ID:-329912}
+      REVERB_APP_KEY: ${REVERB_APP_KEY:-local-reverb-key}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-local-reverb-secret}
+    networks:
+      - fdo_network
+    restart: "no"
+    # Este serviço é projetado para ser executado uma única vez para aplicar as migrações. Ele pode ser removido 
+    # ou comentado após a execução inicial.

@@ -1,0 +1,10 @@
+.git
+.gitignore
+.vscode
+node_modules
+vendor
+storage/logs
+storage/framework/cache
+auth.json
+.env
+coverage
