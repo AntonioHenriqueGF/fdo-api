@@ -13,33 +13,8 @@ services:
       context: .
       dockerfile: Dockerfile
     command: php artisan serve --host=0.0.0.0 --port=8080
-    environment:
-      APP_ENV: ${APP_ENV}
-      APP_URL: ${APP_URL}
-
-      SESSION_DRIVER: ${SESSION_DRIVER}
-      SESSION_DOMAIN: ${SESSION_DOMAIN}
-      SESSION_SECURE_COOKIE: ${SESSION_SECURE_COOKIE}
-
-      SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS}
-      APP_KEY: ${APP_KEY:?APP_KEY must be set in .env}
-      APP_DEBUG: "true"
-      DB_CONNECTION: mysql
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_DATABASE: ${DB_DATABASE:-fdo_api}
-      DB_USERNAME: ${DB_USERNAME:-root}
-      DB_PASSWORD: ${DB_PASSWORD:-root}
-      QUEUE_CONNECTION: database
-      BROADCAST_CONNECTION: reverb
-      REVERB_APP_ID: ${REVERB_APP_ID:-329912}
-      REVERB_APP_KEY: ${REVERB_APP_KEY:-local-reverb-key}
-      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-local-reverb-secret}
-      REVERB_SERVER_HOST: 0.0.0.0
-      REVERB_SERVER_PORT: 8081
-      REVERB_HOST: reverb
-      REVERB_PORT: 8081
-      REVERB_SCHEME: http
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy
@@ -51,24 +26,8 @@ services:
       context: .
       dockerfile: Dockerfile
     command: supervisord -c /var/www/html/docker/supervisor/worker.conf
-    environment:
-      APP_KEY: ${APP_KEY:?APP_KEY must be set in .env}
-      APP_ENV: local
-      APP_DEBUG: "true"
-      DB_CONNECTION: mysql
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_DATABASE: ${DB_DATABASE:-fdo_api}
-      DB_USERNAME: ${DB_USERNAME:-root}
-      DB_PASSWORD: ${DB_PASSWORD:-root}
-      QUEUE_CONNECTION: database
-      BROADCAST_CONNECTION: reverb
-      REVERB_APP_ID: ${REVERB_APP_ID:-329912}
-      REVERB_APP_KEY: ${REVERB_APP_KEY:-local-reverb-key}
-      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-local-reverb-secret}
-      REVERB_HOST: reverb
-      REVERB_PORT: 8081
-      REVERB_SCHEME: http
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy
@@ -80,26 +39,8 @@ services:
       context: .
       dockerfile: Dockerfile
     command: php artisan reverb:start --host=${REVERB_SERVER_HOST:-0.0.0.0} --port=${REVERB_SERVER_PORT:-8081}
-    environment:
-      APP_KEY: ${APP_KEY:?APP_KEY must be set in .env}
-      APP_ENV: ${APP_ENV}
-      APP_DEBUG: ${APP_DEBUG}
-      DB_CONNECTION: ${DB_CONNECTION}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT:-3306}
-      DB_DATABASE: ${DB_DATABASE:-fdo_api}
-      DB_USERNAME: ${DB_USERNAME:-root}
-      DB_PASSWORD: ${DB_PASSWORD:-root}
-      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-database}
-      BROADCAST_CONNECTION: ${BROADCAST_CONNECTION:-reverb}
-      REVERB_APP_ID: ${REVERB_APP_ID:-329912}
-      REVERB_APP_KEY: ${REVERB_APP_KEY:-local-reverb-key}
-      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-local-reverb-secret}
-      REVERB_SERVER_HOST: ${REVERB_SERVER_HOST:-0.0.0.0}
-      REVERB_SERVER_PORT: ${REVERB_SERVER_PORT:-8081}
-      REVERB_HOST: ${REVERB_HOST:-reverb}
-      REVERB_PORT: ${REVERB_PORT:-8081}
-      REVERB_SCHEME: ${REVERB_SCHEME:-http}
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy
@@ -116,17 +57,16 @@ services:
         condition: service_started
       reverb:
         condition: service_started
-    environment:
-      NGINX_SERVER_NAME: ${NGINX_SERVER_NAME:-localhost}
+    env_file:
+      - .env
     networks:
       - fdo_network
 
   db:
     image: mysql:8.0
     restart: always
-    environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-fdo_api}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+    env_file:
+      - .env
     networks:
       - fdo_network
     healthcheck:
@@ -151,18 +91,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      APP_KEY: ${APP_KEY:?APP_KEY must be set in .env}
-      APP_ENV: ${APP_ENV}
-      DB_CONNECTION: ${DB_CONNECTION:-mysql}
-      DB_HOST: ${DB_HOST:-db}
-      DB_PORT: ${DB_PORT:-3306}
-      DB_DATABASE: ${DB_DATABASE:-fdo_api}
-      DB_USERNAME: ${DB_USERNAME:-root}
-      DB_PASSWORD: ${DB_PASSWORD:-root}
-      REVERB_APP_ID: ${REVERB_APP_ID:-329912}
-      REVERB_APP_KEY: ${REVERB_APP_KEY:-local-reverb-key}
-      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-local-reverb-secret}
+    env_file:
+      - .env
     networks:
       - fdo_network
     restart: "no"
