@@ -1,6 +1,6 @@
 networks:
   fdo_network:
-    driver: bridge
+    external: true
 
 volumes:
   # O padrão proficional de persistência é por bind mount, mas para facilitar o uso em ambientes de desenvolvimento
@@ -75,8 +75,6 @@ services:
       context: .
       dockerfile: Dockerfile
     command: php artisan reverb:start --host=0.0.0.0 --port=8081
-    ports:
-      - "8081:8081"
     environment:
       APP_KEY: ${APP_KEY:?APP_KEY must be set in .env}
       APP_ENV: local
