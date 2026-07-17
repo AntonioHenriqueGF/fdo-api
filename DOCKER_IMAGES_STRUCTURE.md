@@ -19,6 +19,8 @@ Servicos principais da aplicacao Laravel:
 - `db`
 - `certbot` (somente no overlay de producao)
 
+No ambiente de desenvolvimento atual, o backend compartilha a rede Docker com o frontend (em outro workspace no mesmo host) e publica apenas o `nginx` na porta 80 do host.
+
 ## 2. Relacao Entre Imagens
 
 ```mermaid
@@ -211,9 +213,10 @@ Volumes:
 
 ### Desenvolvimento (`docker-compose.override.yml`)
 
-- Nginx publicado em `NGINX_HTTP_PORT` (default `8000`) para evitar conflito local de porta 80.
+- Nginx publicado em `NGINX_HTTP_PORT` (default `80`).
 - Bind de `nginx/conf.d/dev.conf` como `default.conf` no container.
-- API exposta em `8080:8080`.
+- Somente o `nginx` e exposto para o host; `api`, `reverb` e `db` ficam apenas na rede interna/compartilhada.
+- O frontend, em outro workspace, e alcancado via nome de servico `frontend` dentro da rede Docker compartilhada.
 
 ### Producao (`docker-compose.prod.yml`)
 
@@ -225,14 +228,38 @@ Volumes:
 
 Rede:
 
-- `fdo_network` (bridge)
+- `fdo_network` (external: true)
+
+Rede compartilhada para permitir conexao entre containers do backend e do frontend (em workspaces distintos no mesmo host).
+
+É preciso criar a rede manualmente antes de subir o compose:
+
+```bash
+docker network create fdo_network
+```
+
+## 10. Regras de Roteamento do Nginx em Dev
+
+Arquivo de referencia: `nginx/conf.d/dev.conf`
+
+- `/app` -> proxy para `reverb:8081` (WebSocket com headers de upgrade)
+- `/apps` -> proxy para `reverb:8081`
+- `/api` -> proxy para `api:8080`
+- `/sanctum` -> proxy para `api:8080`
+- `/broadcasting/auth` -> proxy para `api:8080`
+- `/` -> proxy para `frontend:80`
+
+Resultado pratico:
+
+- O browser conversa somente com o Nginx do backend na porta publicada.
+- O Nginx decide o destino da requisicao (frontend, API Laravel ou Reverb) com base no path.
 
 Volumes nomeados:
 
 - `db_data`: persistencia do MySQL
 - `certbot-etc`: certificados TLS do certbot
 
-## 10. Arquivos-Chave da Estrutura
+## 11. Arquivos-Chave da Estrutura
 
 - `Dockerfile`
 - `.dockerignore`
@@ -246,7 +273,7 @@ Volumes nomeados:
 - `nginx/conf.d/prod.conf.gen-cert`
 - `nginx/templates/prod.conf.template`
 
-## 11. Nomes Finais das Imagens Buildadas (Compose)
+## 12. Nomes Finais das Imagens Buildadas (Compose)
 
 Com o nome atual do projeto no Compose (`fdo-api`), as imagens locais tendem a ser geradas com estes nomes:
 
