@@ -1,7 +1,10 @@
 # Docker Compose para ambiente de produção
 # Este arquivo é utilizado para configurar os serviços que compõem a aplicação em um ambiente de produção
 # Roda apenas quando o usuário especifica "docker-compose -f docker-compose.yml -f docker-compose.prod.yml up"
-
+volumes:
+  certbot-etc:
+    external: true
+    name: certbot-ssh
 services:
   nginx:
     ports:
