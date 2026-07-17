@@ -4,7 +4,7 @@
 volumes:
   certbot-etc:
     external: true
-    name: certbot-ssh
+    name: certbot-ssl
 services:
   nginx:
     ports:
