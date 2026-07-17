@@ -14,6 +14,14 @@ services:
       dockerfile: Dockerfile
     command: php artisan serve --host=0.0.0.0 --port=8080
     environment:
+      APP_ENV: ${APP_ENV}
+      APP_URL: ${APP_URL}
+
+      SESSION_DRIVER: ${SESSION_DRIVER}
+      SESSION_DOMAIN: ${SESSION_DOMAIN}
+      SESSION_SECURE_COOKIE: ${SESSION_SECURE_COOKIE}
+
+      SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS}
       APP_KEY: ${APP_KEY:?APP_KEY must be set in .env}
       APP_DEBUG: "true"
       DB_CONNECTION: mysql
