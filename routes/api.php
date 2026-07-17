@@ -24,6 +24,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/import', [ImportsController::class, 'import']);
 
+    Route::get('/import', [ImportsController::class, 'listImports']);
+
+    Route::delete('/import/{importId}', [ImportsController::class, 'deleteImport']);
+
     Route::group(['prefix' => 'balance'], function () {
         Route::get('/daily', [BalanceController::class, 'getDailyBalance']);
         Route::get('/monthly', [BalanceController::class, 'getMonthlyBalance']);

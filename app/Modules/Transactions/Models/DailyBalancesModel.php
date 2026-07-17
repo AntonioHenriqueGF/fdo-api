@@ -23,9 +23,8 @@ class DailyBalancesModel extends Model
 
     /**
      * Saves a list of daily balances for a given user and import.
-     * @param int $userId
-     * @param int $importId
-     * @param array $dailyBalances Array of daily balances, each containing 'date_yyyymmdd' and 'closing_balance'
+     *
+     * @param  array  $dailyBalances  Array of daily balances, each containing 'date_yyyymmdd' and 'closing_balance'
      * @return void
      */
     public function saveDailyBalances(int $userId, int $importId, array $dailyBalances)
@@ -33,7 +32,7 @@ class DailyBalancesModel extends Model
         // Implement logic to save the daily balances to the database
         // For example, you can iterate through the list of daily balances and create a new record for each one in the daily_balances table
         foreach ($dailyBalances as $balance) {
-            if (!isset($balance['date_yyyymmdd']) || !isset($balance['closing_balance'])) {
+            if (! isset($balance['date_yyyymmdd']) || ! isset($balance['closing_balance'])) {
                 throw new \InvalidArgumentException('Each daily balance must contain date_yyyymmdd and closing_balance.');
             }
             DB::table('daily_balances')->insert([
@@ -47,7 +46,8 @@ class DailyBalancesModel extends Model
 
     /**
      * Lists the daily balances for a given user.
-     * @param int $userId
+     *
+     * @param  int  $userId
      * @return array Array of daily balances
      */
     public function listDailyBalances($userId)
@@ -62,7 +62,8 @@ class DailyBalancesModel extends Model
 
     /**
      * Lists balance by month for a given user.
-     * @param int $userId
+     *
+     * @param  int  $userId
      * @return array Array of monthly balances
      */
     public function listBalanceByMonth($userId)
@@ -166,5 +167,10 @@ class DailyBalancesModel extends Model
         if ($deleted === 0) {
             throw new \InvalidArgumentException("Balance with ID {$balanceId} not found.");
         }
+    }
+
+    public function deleteBalancesByImportId(int $importId, int $userId): void
+    {
+        DB::table('daily_balances')->where('dba_import_id', $importId)->where('dba_user_id', $userId)->delete();
     }
 }

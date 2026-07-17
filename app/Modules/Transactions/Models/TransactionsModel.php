@@ -243,7 +243,7 @@ class TransactionsModel extends Model
 
     public function listTransactions(array $filters, int $userId): array
     {
-        if (!$userId) {
+        if (! $userId) {
             throw new \InvalidArgumentException('User ID is required to list transactions.');
         }
         $query = DB::table('transactions')
@@ -354,5 +354,10 @@ class TransactionsModel extends Model
         }
 
         return (array) $transaction;
+    }
+
+    public function deleteByImportId(int $importId, int $userId): void
+    {
+        DB::table('transactions')->where('tra_import_id', $importId)->where('tra_user_id', $userId)->delete();
     }
 }
