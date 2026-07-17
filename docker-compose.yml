@@ -79,27 +79,27 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: php artisan reverb:start --host=0.0.0.0 --port=8081
+    command: php artisan reverb:start --host=${REVERB_SERVER_HOST:-0.0.0.0} --port=${REVERB_SERVER_PORT:-8081}
     environment:
       APP_KEY: ${APP_KEY:?APP_KEY must be set in .env}
-      APP_ENV: local
-      APP_DEBUG: "true"
-      DB_CONNECTION: mysql
-      DB_HOST: db
-      DB_PORT: 3306
+      APP_ENV: ${APP_ENV}
+      APP_DEBUG: ${APP_DEBUG}
+      DB_CONNECTION: ${DB_CONNECTION}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT:-3306}
       DB_DATABASE: ${DB_DATABASE:-fdo_api}
       DB_USERNAME: ${DB_USERNAME:-root}
       DB_PASSWORD: ${DB_PASSWORD:-root}
-      QUEUE_CONNECTION: database
-      BROADCAST_CONNECTION: reverb
+      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-database}
+      BROADCAST_CONNECTION: ${BROADCAST_CONNECTION:-reverb}
       REVERB_APP_ID: ${REVERB_APP_ID:-329912}
       REVERB_APP_KEY: ${REVERB_APP_KEY:-local-reverb-key}
       REVERB_APP_SECRET: ${REVERB_APP_SECRET:-local-reverb-secret}
-      REVERB_SERVER_HOST: 0.0.0.0
-      REVERB_SERVER_PORT: 8081
-      REVERB_HOST: reverb
-      REVERB_PORT: 8081
-      REVERB_SCHEME: http
+      REVERB_SERVER_HOST: ${REVERB_SERVER_HOST:-0.0.0.0}
+      REVERB_SERVER_PORT: ${REVERB_SERVER_PORT:-8081}
+      REVERB_HOST: ${REVERB_HOST:-reverb}
+      REVERB_PORT: ${REVERB_PORT:-8081}
+      REVERB_SCHEME: ${REVERB_SCHEME:-http}
     depends_on:
       db:
         condition: service_healthy
@@ -153,10 +153,10 @@ services:
         condition: service_healthy
     environment:
       APP_KEY: ${APP_KEY:?APP_KEY must be set in .env}
-      APP_ENV: local
-      DB_CONNECTION: mysql
-      DB_HOST: db
-      DB_PORT: 3306
+      APP_ENV: ${APP_ENV}
+      DB_CONNECTION: ${DB_CONNECTION:-mysql}
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-3306}
       DB_DATABASE: ${DB_DATABASE:-fdo_api}
       DB_USERNAME: ${DB_USERNAME:-root}
       DB_PASSWORD: ${DB_PASSWORD:-root}
