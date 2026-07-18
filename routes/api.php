@@ -16,7 +16,6 @@ Route::post('/signup', [UserController::class, 'create']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
-
     Route::get('/me', [LoginController::class, 'me']);
 
     Route::get('/job-requests/{jobRequestId}', [JobRequestsController::class, 'show']);
