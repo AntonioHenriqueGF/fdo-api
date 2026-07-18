@@ -15,11 +15,6 @@ server {
     listen 443 ssl;
     server_name ${NGINX_SERVER_NAME};
 
-    # Validação do método usando o MAP (Mais rápido e limpo que Regex)
-    if ($is_method_allowed = 0) {
-        return 405;
-    }
-
     ssl_certificate /etc/letsencrypt/live/${NGINX_SERVER_NAME}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/${NGINX_SERVER_NAME}/privkey.pem;
 
@@ -52,6 +47,9 @@ server {
     }
 
     location /api {
+        limit_except GET POST PUT PATCH DELETE OPTIONS HEAD {
+            deny all;
+        }
         limit_req zone=api burst=40 nodelay;
 
         proxy_pass $api;
