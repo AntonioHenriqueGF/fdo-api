@@ -100,9 +100,4 @@ server {
     location ~ /\.(?!well-known).* {
         deny all;
     }
-    
-    location ~* \.(js|css|png|jpg|jpeg|gif|svg|ico|woff2?)$ {
-        expires 30d;
-        access_log off;
-    }
 }
