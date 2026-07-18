@@ -15,8 +15,19 @@ server {
     listen 443 ssl;
     server_name ${NGINX_SERVER_NAME};
 
+    # Validação do método usando o MAP (Mais rápido e limpo que Regex)
+    if ($is_method_allowed = 0) {
+        return 405;
+    }
+
     ssl_certificate /etc/letsencrypt/live/${NGINX_SERVER_NAME}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/${NGINX_SERVER_NAME}/privkey.pem;
+
+    add_header X-Frame-Options "DENY" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
+    add_header Strict-Transport-Security "max-age=3600; includeSubDomains" always;
 
     set $api http://api:8080;
     set $frontend http://frontend:80;
@@ -41,6 +52,8 @@ server {
     }
 
     location /api {
+        limit_req zone=api burst=40 nodelay;
+
         proxy_pass $api;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -70,5 +83,26 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Error redirects
+
+    location = /404.html {
+        root /usr/share/nginx/html;
+        internal;
+    }
+
+    location = /50x.html {
+        root /usr/share/nginx/html;
+        internal;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+    
+    location ~* \.(js|css|png|jpg|jpeg|gif|svg|ico|woff2?)$ {
+        expires 30d;
+        access_log off;
     }
 }

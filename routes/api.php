@@ -14,7 +14,11 @@ Route::post('/login', [LoginController::class, 'login']);
 
 Route::post('/signup', [UserController::class, 'create']);
 
+Route::get('/erro', function () {
+    throw new Exception('Teste');
+});
 Route::middleware('auth:sanctum')->group(function () {
+
 
     Route::get('/me', [LoginController::class, 'me']);
 
