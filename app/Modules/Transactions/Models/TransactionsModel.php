@@ -114,7 +114,7 @@ class TransactionsModel extends Model
         $matchedCategoryId = null;
 
         foreach ($rules as $rule) {
-            if (preg_match("/$rule->rul_pattern/", $description)) {
+            if (preg_match("/$rule->rul_pattern/", mb_strtoupper($description))) {
                 Log::info("Transaction description '{$description}' matched rule pattern '{$rule->rul_pattern}' for user ID {$userId}.");
                 $matchedRuleId = $rule->rul_id;
                 $matchedCategoryId = $rule->rul_category_id;
