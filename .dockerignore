@@ -8,3 +8,6 @@ storage/framework/cache
 auth.json
 .env
 coverage
+
+# Caches gerados localmente podem listar providers de dependências de dev ausentes na imagem de produção
+bootstrap/cache/*.php

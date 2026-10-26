@@ -15,7 +15,9 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 
 COPY composer.json composer.lock ./
-RUN composer install --no-interaction --no-scripts --prefer-dist
+# Em produção, use COMPOSER_FLAGS="--no-dev --optimize-autoloader" para não instalar Pest/PHPUnit na imagem.
+ARG COMPOSER_FLAGS=""
+RUN composer install --no-interaction --no-scripts --prefer-dist ${COMPOSER_FLAGS}
 
 COPY . .
 

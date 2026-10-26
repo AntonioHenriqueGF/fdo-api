@@ -7,3 +7,9 @@ services:
       - "${NGINX_HTTP_PORT:-80}:80"
     volumes:
       - ./nginx/conf.d/dev.conf:/etc/nginx/conf.d/default.conf
+  db:
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      # Cria o banco "fdo_api_testing" usado pelos testes. Só roda quando o volume db_data é criado do zero.
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro

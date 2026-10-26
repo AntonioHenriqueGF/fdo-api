@@ -73,7 +73,7 @@ services:
     networks:
       - fdo_network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-root}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USERNAME:-root}", "-p${DB_PASSWORD:-root}"]
       interval: 10s
       timeout: 5s
       retries: 5
