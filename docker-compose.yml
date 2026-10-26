@@ -7,11 +7,18 @@ volumes:
   # e testes que rodam em Windows, utilizamos um "volume nomeado" gerenciado pelo Docker.
   db_data:
 
+# Uma âncora é um bloco de configurações que é salvo na memória e pode ser reutilizado em outros serviços. (Como uma função em programação)
+# Neste caso, estamos criando uma âncora para o build dos serviços PHP, permitindo que todos os serviços compartilhem a mesma configuração de build.
+x-app-build: &app-build
+  context: .
+  dockerfile: Dockerfile
+  args:
+    # COMPOSER_FLAGS="--no-dev --optimize-autoloader"
+    COMPOSER_FLAGS: ${COMPOSER_FLAGS:-}
+
 services:
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: *app-build
     command: php artisan serve --host=0.0.0.0 --port=8080
     env_file:
       - .env
@@ -22,9 +29,7 @@ services:
       - fdo_network
 
   worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: *app-build
     command: supervisord -c /var/www/html/docker/supervisor/worker.conf
     env_file:
       - .env
@@ -35,9 +40,7 @@ services:
       - fdo_network
 
   reverb:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: *app-build
     command: php artisan reverb:start --host=${REVERB_SERVER_HOST:-0.0.0.0} --port=${REVERB_SERVER_PORT:-8081}
     env_file:
       - .env
@@ -84,9 +87,7 @@ services:
   migrate:
     # Por questões de segurança, a porta 3306 do MySQL não é exposta para fora do container.
     # Este serviço é responsável por aplicar as migrações no banco de dados de dentro da rede do Docker, garantindo que o banco de dados esteja acessível apenas para os serviços que precisam dele.
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: *app-build
     command: php artisan migrate --force
     depends_on:
       db:
