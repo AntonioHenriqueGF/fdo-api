@@ -2,6 +2,11 @@
 # Ele é utilizado para sobrescrever ou adicionar configurações específicas para o ambiente de desenvolvimento, sem afetar o ambiente de produção.
 
 services:
+  api:
+    volumes:
+      - .:/var/www/html         # bind mount ("espelha" a pasta do projeto no container)
+      - /var/www/html/vendor    # preserva o vendor, que deve ser o da imagem e não da pasta do projeto
+
   nginx:
     ports:
       - "${NGINX_HTTP_PORT:-80}:80"
