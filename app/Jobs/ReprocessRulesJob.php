@@ -15,7 +15,7 @@ class ReprocessRulesJob extends FDOJobClass
     public function __construct(
         protected User $user
     ) {
-        $this->reprocessRulesService = new ReprocessRulesService;
+        $this->reprocessRulesService = new ReprocessRulesService();
     }
 
     public function process(): void
