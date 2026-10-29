@@ -19,11 +19,13 @@ class ImportFileService
 
     public function execute(int $userId, array $data): void
     {
-        $binHex = hex2bin($data['fileHash']);
+        $fileHash = $data['fileHash'];
 
-        if ($binHex === false) {
+        if (! ctype_xdigit($fileHash) || strlen($fileHash) % 2 !== 0) {
             throw new \InvalidArgumentException('Invalid file hash provided.');
         }
+
+        $binHex = hex2bin($fileHash);
 
         DB::transaction(function () use ($userId, $data, $binHex) {
             if (! $this->importsModel->verifyUniqueImport($userId, $binHex)) {
